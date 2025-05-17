@@ -15,15 +15,16 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  height: 100vh;
 }
 
 .my_panel {
   width: 90%; 
-  max-width: 1000px; /* increased width */
+  max-width: 1000px;
   border: 1px dashed black;
   padding: 20px;
 }
-
 
 .outer_box {
   border: 1px solid orange;
@@ -37,4 +38,10 @@ body {
 .center {
   text-align: center;
   color: rgb(5, 5, 110);
+}
+
+.err_msg{
+  text-align: center;
+  margin: auto;
+  color: maroon;
 }
