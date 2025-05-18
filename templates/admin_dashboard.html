@@ -31,7 +31,10 @@
               {% for show in theatre.shows %}
               <tr>
                 <td>{{ show.id }}</td>
-                <td>{{ show.name }}</td>
+                <!-- Show name linked to Edit Venue page instead -->
+                <td>
+                  <a href="{{ url_for('edit_venue', id=theatre.id, name=name) }}">{{ show.name }}</a>
+                </td>
                 <td>{{ show.date_time.strftime('%d %b %Y, %I:%M %p') if show.date_time else '' }}</td>
               </tr>
               {% endfor %}
@@ -88,4 +91,3 @@
 
 </div>
 {% endblock %}
-

@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 
 db = SQLAlchemy()
 
@@ -12,7 +13,7 @@ class UserInfo(db.Model):
     address = db.Column(db.String, nullable=False)
     pin_code = db.Column(db.Integer, nullable=False)
     tickets = db.relationship("Ticket", cascade="all,delete", backref="user_info", lazy=True)
-    
+    bookings = db.relationship("Booking", cascade="all,delete", backref="user_info", lazy=True)
 
 class Theatre(db.Model):
     __tablename__ = "theatre"
@@ -33,6 +34,7 @@ class Show(db.Model):
     date_time = db.Column(db.DateTime, nullable=False)
     theatre_id = db.Column(db.Integer, db.ForeignKey("theatre.id"), nullable=False)
     tickets = db.relationship("Ticket", cascade="all,delete", backref="show", lazy=True)
+    bookings = db.relationship("Booking", cascade="all,delete", backref="show", lazy=True)
 
 class Ticket(db.Model):
     __tablename__ = "ticket"
@@ -42,3 +44,10 @@ class Ticket(db.Model):
     user_rating = db.Column(db.Integer, default=0)
     user_id = db.Column(db.Integer, db.ForeignKey("user_info.id"), nullable=False)
     show_id = db.Column(db.Integer, db.ForeignKey("show.id"), nullable=False)
+
+class Booking(db.Model):
+    __tablename__ = "booking"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user_info.id'), nullable=False)
+    show_id = db.Column(db.Integer, db.ForeignKey('show.id'), nullable=False)
+    booking_date = db.Column(db.DateTime, default=datetime.utcnow)

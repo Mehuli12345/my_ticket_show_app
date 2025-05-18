@@ -43,6 +43,10 @@
               <a class="nav-link" href="#">Logout</a>
             </li>
           </ul>
+          <form class="form-inline my-2 my-lg-0" action="/search/{{name}}">
+            <input class="form-control mr-sm-2" type="search" placeholder="Search" name="search_text" ud="search_text"aria-label="Search">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+          </form>
           <span class="navbar-text">Welcome to {{name}}</span>
         </nav>
         {%block content%}

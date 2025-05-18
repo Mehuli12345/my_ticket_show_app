@@ -1,0 +1,36 @@
+{% extends "user_layout.html" %}
+{% block content %}
+  <div class="center"><h3>Book Ticket</h3></div>
+  <div class="input_form">
+
+    <!-- Book Ticket Form -->
+    <form method="POST" action="/book_ticket">
+      <input type="hidden" name="show_id" value="{{ show.id }}">
+
+      <div class="form-group">
+        <label for="showName">Show</label>
+        <input type="text" class="form-control" id="showName" value="{{ show.name }}" readonly>
+      </div>
+
+      <div class="form-group">
+        <label for="venue">Venue</label>
+        <input type="text" class="form-control" id="venue" value="{{ show.theatre.name }}" readonly>
+      </div>
+
+      <div class="form-group">
+        <label for="dateTime">Date & Time</label>
+        <input type="text" class="form-control" id="dateTime" value="{{ show.date_time }}" readonly>
+      </div>
+
+      <div class="form-group">
+        <label for="tickets">Number of Tickets</label>
+        <input type="number" class="form-control" id="tickets" name="tickets" placeholder="Enter number of tickets" min="1" required>
+      </div>
+
+      <button type="submit" class="btn btn-success">Book Now</button>
+    </form>
+
+    <a href="{{ url_for('user_dashboard') }}">Cancel</a>
+    <div class="center">{{ msg }}</div>
+  </div>
+{% endblock %}

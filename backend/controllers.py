@@ -1,134 +1,165 @@
 from flask import render_template, request, redirect, url_for, session, flash
-from backend.models import db, UserInfo, Show, Theatre
+from backend.models import db, UserInfo, Show, Theatre, Booking 
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
 
 def register_routes(app):
-
-    @app.route("/")
+    @app.route("/", endpoint='home')
     def home():
         return render_template("index.html")
 
-    @app.route('/login', methods=['GET', 'POST'])
+    @app.route("/login", methods=["GET", "POST"], endpoint='login')
     def login():
-        if request.method == 'POST':
-            email = request.form['email']
-            password = request.form['password']
-
+        if request.method == "POST":
+            email = request.form["email"]
+            password = request.form["password"]
             user = UserInfo.query.filter_by(email=email).first()
             if user and check_password_hash(user.password, password):
-                session['user_id'] = user.id
-                session['user_type'] = user.user_type
+                session["user_id"] = user.id
+                session["user_type"] = user.user_type
+                if user.user_type == "admin":
+                    return redirect(url_for("admin_dashboard"))
+                else:
+                    return redirect(url_for("user_dashboard"))
+            flash("Invalid credentials", "danger")
+        return render_template("login.html")
 
-                return redirect(url_for('admin_dashboard' if user.user_type == 'admin' else 'user_dashboard'))
-            flash('Invalid credentials', 'danger')
-            return redirect(url_for('login'))
-        return render_template('login.html')
-
-    @app.route("/register", methods=["GET", "POST"])
+    @app.route("/register", methods=["GET", "POST"], endpoint='register')
     def register():
         if request.method == "POST":
             new_user = UserInfo(
-                email=request.form.get("email"),
-                password=generate_password_hash(request.form.get("password")),
-                full_name=request.form.get("full_name"),
-                address=request.form.get("address"),
-                pin_code=request.form.get("pin_code"),
-                user_type=request.form.get("user_type")
+                email=request.form["email"],
+                password=generate_password_hash(request.form["password"]),
+                full_name=request.form["full_name"],
+                address=request.form["address"],
+                pin_code=request.form["pin_code"],
+                user_type=request.form["user_type"]
             )
             db.session.add(new_user)
             db.session.commit()
-            return redirect(url_for('login', msg="Registration successful"))
+            flash("Registration successful", "success")
+            return redirect(url_for("login"))
         return render_template("signup.html")
 
-    @app.route("/signup", methods=["GET"])
+    @app.route("/signup", methods=["GET"], endpoint='signup_alias')
     def signup_alias():
-        return redirect("/register")
+        return redirect(url_for("register"))
 
-    @app.route('/admin/dashboard')
+    @app.route("/admin/dashboard", endpoint='admin_dashboard')
     def admin_dashboard():
-        if session.get('user_type') != 'admin':
+        if session.get("user_type") != "admin":
             flash("Unauthorized access", "danger")
-            return redirect(url_for('login'))
-        user = UserInfo.query.get(session.get('user_id'))
+            return redirect(url_for("login"))
+        user = UserInfo.query.get(session["user_id"])
         theatres = Theatre.query.all()
-        return render_template('admin_dashboard.html', theatres=theatres, name=user.full_name)
+        return render_template("admin_dashboard.html", name=user.full_name, theatres=theatres)
 
-    @app.route('/user/dashboard')
+    @app.route("/user/dashboard", endpoint='user_dashboard')
     def user_dashboard():
-        if session.get('user_type') != 'user':
+        if session.get("user_type") != "user":
             flash("Unauthorized access", "danger")
-            return redirect(url_for('login'))
-        user = UserInfo.query.get(session.get('user_id'))
-        shows = Show.query.filter(Show.date_time >= datetime.now()).all()
-        return render_template('user_dashboard.html', shows=shows, name=user.full_name)
+            return redirect(url_for("login"))
+        user = UserInfo.query.get(session["user_id"])
+        shows = Show.query.all() 
+        return render_template("user_dashboard.html", name=user.full_name, shows=shows)
 
-    @app.route("/user/<name>")
-    def user_named_page(name):
-        return render_template("user_dashboard.html", name=name)
+    @app.route("/logout")
+    def logout():
+        session.clear()
+        flash("Logged out successfully", "success")
+        return redirect(url_for("login"))
 
-    @app.route("/admin/<name>")
-    def admin_named_page(name):
-        return render_template("admin_dashboard.html", name=name)
-
-    @app.route('/add_venue', methods=['GET', 'POST'])
+    @app.route("/add_venue", methods=["GET", "POST"])
     def add_venue():
-        msg = ''
+        if session.get("user_type") != "admin":
+            return redirect(url_for("login"))
+        if request.method == "POST":
+            new_theatre = Theatre(
+                name=request.form["name"],
+                location=request.form["location"],
+                pin_code=request.form["pin_code"],
+                capacity=request.form["capacity"]
+            )
+            db.session.add(new_theatre)
+            db.session.commit()
+            flash("Theatre added successfully", "success")
+            return redirect(url_for("admin_dashboard"))
+        return render_template("add_venue.html")
+
+    @app.route("/edit_venue/<int:venue_id>", methods=["GET", "POST"])
+    def edit_venue(venue_id):
+        if session.get("user_type") != "admin":
+            return redirect(url_for("login"))
+        venue = Theatre.query.get_or_404(venue_id)
+        if request.method == "POST":
+            venue.name = request.form["name"]
+            venue.location = request.form["location"]
+            venue.pin_code = request.form["pin_code"]
+            venue.capacity = request.form["capacity"]
+            db.session.commit()
+            flash("Theatre updated successfully", "success")
+            return redirect(url_for("admin_dashboard"))
+        return render_template("edit_venue.html", venue=venue)
+
+    @app.route("/delete_venue/<int:venue_id>")
+    def delete_venue(venue_id):
+        if session.get("user_type") != "admin":
+            return redirect(url_for("login"))
+        venue = Theatre.query.get_or_404(venue_id)
+        db.session.delete(venue)
+        db.session.commit()
+        flash("Theatre deleted successfully", "success")
+        return redirect(url_for("admin_dashboard"))
+    
+    @app.route('/book_ticket/<int:show_id>', methods=['GET', 'POST'])
+    def book_ticket(show_id):
+        show = Show.query.get_or_404(show_id)
+
         if request.method == 'POST':
-            name = request.form['name']
-            location = request.form['location']
-            pin_code = request.form['pin_code']
-            capacity = request.form['capacity']
+        # Check if user is logged in (assuming you store user_id in session)
+            user_id = session.get('user_id')
+            if not user_id:
+                flash("Please login to book tickets.", "warning")
+                return redirect(url_for('login'))
 
-            if not all([name, location, pin_code, capacity]):
-                msg = "Please fill all fields."
-                return render_template('add_venue.html', msg=msg)
+        # Create a new booking record
+            new_booking = Booking(user_id=user_id, show_id=show.id)
+            db.session.add(new_booking)
+            db.session.commit()
 
-            try:
-                new_venue = Theatre(name=name, location=location,
-                                    pin_code=int(pin_code), capacity=int(capacity))
-                db.session.add(new_venue)
-                db.session.commit()
-                msg = "Venue added successfully"
-            except Exception as e:
-                db.session.rollback()
-                msg = f"Error adding venue: {str(e)}"
-        return render_template('add_venue.html', msg=msg)
+            flash(f'You have successfully booked tickets for "{show.name}"!', 'success')
+            return redirect(url_for('user_dashboard'))
 
-    @app.route('/show/<int:id>/<name>', methods=['GET', 'POST'])
-    def show(id, name):
-        if session.get('user_type') != 'admin':
-            flash("Unauthorized access", "danger")
-            return redirect(url_for('login'))
+        return render_template('book_ticket.html', show=show)
 
-        msg = ''
-        if request.method == 'POST':
-            venue_id = request.form.get('venue_id')
-            movie_name = request.form.get('movie_name')
-            tags = request.form.get('tags')
-            rating = request.form.get('rating')
-            tkt_price = request.form.get('tkt_price')
-            dt_time = request.form.get('dt_time')
 
-            if not all([venue_id, movie_name, tags, rating, tkt_price, dt_time]):
-                msg = "Please fill all fields."
-                return render_template('add_show.html', msg=msg, id=id, name=name)
 
-            try:
-                new_show = Show(
-                    theatre_id=int(venue_id),
-                    name=movie_name,
-                    tags=tags,
-                    rating=int(rating),
-                    tkt_price=float(tkt_price),
-                    date_time=datetime.strptime(dt_time, '%Y-%m-%dT%H:%M')
-                )
-                db.session.add(new_show)
-                db.session.commit()
-                msg = "Show added successfully."
-            except Exception as e:
-                db.session.rollback()
-                msg = f"Error adding show: {str(e)}"
+    @app.route("/add_show", methods=["GET", "POST"])
+    def add_show():
+        if session.get("user_type") != "admin":
+            return redirect(url_for("login"))
+        theatres = Theatre.query.all()
+        if request.method == "POST":
+            new_show = Show(
+                theatre_id=request.form["theatre_id"],
+                name=request.form["name"],
+                tags=request.form["tags"],
+                rating=request.form["rating"],
+                tkt_price=request.form["tkt_price"],
+                date_time=datetime.strptime(request.form["date_time"], "%Y-%m-%dT%H:%M")
+            )
+            db.session.add(new_show)
+            db.session.commit()
+            flash("Show added successfully", "success")
+            return redirect(url_for("admin_dashboard"))
+        return render_template("add_show.html", theatres=theatres)
 
-        return render_template('add_show.html', msg=msg, id=id, name=name)
+    @app.route("/delete_show/<int:show_id>")
+    def delete_show(show_id):
+        if session.get("user_type") != "admin":
+            return redirect(url_for("login"))
+        show = Show.query.get_or_404(show_id)
+        db.session.delete(show)
+        db.session.commit()
+        flash("Show deleted successfully", "success")
+        return redirect(url_for("admin_dashboard"))
