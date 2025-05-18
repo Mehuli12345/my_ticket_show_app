@@ -7,11 +7,12 @@ class UserInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String, unique=True, nullable=False)
     password = db.Column(db.String, nullable=False)
-    role = db.Column(db.Integer, default=1)
+    user_type = db.Column(db.String(50), nullable=False, default='user') 
     full_name = db.Column(db.String, nullable=False)
     address = db.Column(db.String, nullable=False)
     pin_code = db.Column(db.Integer, nullable=False)
     tickets = db.relationship("Ticket", cascade="all,delete", backref="user_info", lazy=True)
+    
 
 class Theatre(db.Model):
     __tablename__ = "theatre"

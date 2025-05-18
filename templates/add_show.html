@@ -1,0 +1,44 @@
+{% extends "admin_layout.html" %}
+{% block content %}
+    <div class="center"><h3>Add Show</h3></div>
+    <div class="input_form">
+      <form method="POST" action="">
+        <div class="form-group">
+          <label for="v_id">Venue ID</label>
+          <input type="number" class="form-control" id="v_id" name="venue_id" placeholder="Enter Venue ID" required>
+        </div>
+
+        <div class="form-group">
+          <label for="movie_name">Movie Name</label>
+          <input type="text" class="form-control" id="movie_name" name="movie_name" placeholder="Enter Movie Name" required>
+        </div>
+
+        <div class="form-group">
+          <label for="tkt_price">Ticket Price:</label>
+          <input type="number" step="0.01" class="form-control" id="tkt_price" name="tkt_price" required>
+        </div>
+
+        <div class="form-group">
+          <label for="tags">Tags</label>
+          <input type="text" class="form-control" id="tags" name="tags" placeholder="Genre, Action, etc." required>
+        </div>
+
+        <div class="form-group">
+          <label for="rating">Ratings (out of 5)</label>
+          <input type="number" class="form-control" id="rating" name="rating" min="0" max="5" required>
+        </div>
+
+        <div class="form-group">
+          <label for="dt_time">Date/Time</label>
+          <input type="datetime-local" class="form-control" id="dt_time" name="dt_time" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+
+      <a href="/admin/dashboard">Cancel</a>
+      <div class="center">{{ msg }}</div>
+    </div>
+{% endblock %}
+
+
