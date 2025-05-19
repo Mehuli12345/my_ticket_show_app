@@ -4,7 +4,7 @@ Welcome to **TicketEase**, your seamless digital solution for managing shows, ve
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
 ![Flask](https://img.shields.io/badge/Flask-2.x-lightgrey)
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+
 
 ---
 
@@ -103,17 +103,6 @@ Additional endpoints for `Users`, `Theatres`, `Bookings`, and `Tickets` are also
 
 ---
 
-## 📸 Screenshots (optional)
-
-<!-- Add image links if needed -->
-
-<!--
-<p align="center">
-  <img src="assets/show_api_demo.png" width="600"/>
-</p>
--->
-
----
 
 ## ✅ Future Improvements
 
@@ -130,17 +119,12 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 
 ---
 
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE).
-
----
 
 ## 💙 Acknowledgements
 
 * Flask & SQLAlchemy Docs
 * Freepik / Unsplash for venue image placeholders
-* All open-source contributors 💩
+* All open-source contributors 
 
 
 
